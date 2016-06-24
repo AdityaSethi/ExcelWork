@@ -1,63 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.js"></script>
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xls/0.7.4-a/xls.js"></script>
-<script type='text/javascript'>//<![CDATA[
-$(window).load(function(){
-var oFileIn;
-
-$(function() {
-    oFileIn = document.getElementById('my_file_input');
-    if(oFileIn.addEventListener) {
-        oFileIn.addEventListener('change', filePicked, false);
-    }
-});
-
-
-function filePicked(oEvent) {
-    // Get The File From The Input
-    var oFile = oEvent.target.files[0];
-    var sFilename = oFile.name;
-    // Create A File Reader HTML5
-    var reader = new FileReader();
-    
-    // Ready The Event For When A File Gets Selected
-    reader.onload = function(e) {
-        var data = e.target.result;
-        var cfb = XLS.CFB.read(data, {type: 'binary'});
-        var wb = XLS.parse_xlscfb(cfb);
-        // Loop Over Each Sheet
-        wb.SheetNames.forEach(function(sheetName) {
-            // Obtain The Current Row As CSV
-            var sCSV = XLS.utils.make_csv(wb.Sheets[sheetName]);   
-            var data = XLS.utils.sheet_to_json(wb.Sheets[sheetName], {header:1});   
-            $.each(data, function( indexR, valueR ) {
-                var sRow = "<tr>";
-                $.each(data[indexR], function( indexC, valueC ) {
-                    sRow = sRow + "<td>" + valueC + "</td>";
-                });
-                sRow = sRow + "</tr>";
-                $("#my_file_output").append(sRow);
-            });
-        });
-    };
-    
-    // Tell JS To Start Reading The File.. You could delay this if desired
-    reader.readAsBinaryString(oFile);
-}
-
-});//]]> 
-
-</script>
-
-  
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/app.css">
+    <script type="text/javascript" src="lib/jquery-1.11.0.js"></script>
+    <script type="text/javascript" src="lib/xls.js"></script>
+    <script type='text/javascript' src="script.js"></script>
 </head>
 
 <body>
-  <input type="file" id="my_file_input" />
-<table id='my_file_output'></table>
-  
+    <header class="navbar navbar-static-top bs-docs-nav grey-color">
+        <a class="navbar-brand logo"></a>
+    </header>
+    <div class="container bs-docs-container">
+    <h2 class="overview-doctype">Please upload valid file with .xls extention</h2>
+        <div class="form-group">
+            <label>Upload file</label>
+            <input type="file" id="my_file_input" />
+        </div>
+        <h2 class="overview-doctype">Table with generated url</h2>
+        <table id='my_file_output' class="table table-bordered table-striped"></table>
+    </div>
 </body>
 
 </html>
