@@ -6,8 +6,19 @@ $(function() {
     if(oFileIn.addEventListener) {
         oFileIn.addEventListener('change', filePicked, false);
     }
-});
 
+    $('#export_button').bind('click', function () {
+        $("#my_file_output").table2excel({
+            exclude: ".noExl",
+            name: "Excel Document Name",
+            filename: "Jabong Data",
+            fileext: ".xls",
+            exclude_img: true,
+            exclude_links: true,
+            exclude_inputs: true
+        });
+    })
+});
 
 function filePicked(oEvent) {
     // Get The File From The Input
@@ -88,38 +99,38 @@ function filePicked(oEvent) {
                     cData: stringifyCData,
                 })
             });
-            var i =1;
+            var datalength = objectToPost.length;
             objectToPost.forEach(function (postObj) {
-                //$.post('http://jabong.apitest.zykrr.com/token/12', postObj).done(function (data) {
-                    postObj.token = i;
-                    postObj.url = "http://jabong.zykrr.com?token=" + i + '%asd@asd.com';
-                    i++;
-                //})
-            });
+                $.post('http://jabong.apitest.zykrr.com/token/12', postObj).done(function (data) {
+                    postObj.token = data.uid;
+                    postObj.url = "http://jabong.zykrr.com?token=" + data.uid + '%' + data.emailId;
+                    datalength--;
+                    if (datalength == 0) {
+                        objectToPost.forEach(function (postData) {
+                            postData.cData = JSON.parse(postData.cData);
+                            newdata.forEach(function (ndata) {
+                                if (ndata[0] === postData.cData.orderNo) {
+                                    ndata.push(postData.token);
+                                    ndata.push(postData.url);
+                                }
+                            })
+                        });
 
-            objectToPost.forEach(function (postData) {
-                
-                postData.cData = JSON.parse(postData.cData);
-                newdata.forEach(function (ndata) {
-                    if (ndata[0] === postData.cData.orderNo) {
-                        ndata.push(postData.token);
-                        ndata.push(postData.url);
+                        header.push('TOKEN');
+                        header.push('URL');
+
+                        newdata.unshift(header);
+
+                        $.each(newdata, function( indexR, valueR ) {
+                            var sRow = "<tr>";
+                            $.each(newdata[indexR], function( indexC, valueC ) {
+                                sRow = sRow + "<td>" + valueC + "</td>";
+                            });
+                            sRow = sRow + "</tr>";
+                            $("#my_file_output").append(sRow);
+                        });
                     }
                 })
-            });
-
-            header.push('TOKEN');
-            header.push('URL');
-
-            newdata.unshift(header);
-
-            $.each(newdata, function( indexR, valueR ) {
-                var sRow = "<tr>";
-                $.each(newdata[indexR], function( indexC, valueC ) {
-                    sRow = sRow + "<td>" + valueC + "</td>";
-                });
-                sRow = sRow + "</tr>";
-                $("#my_file_output").append(sRow);
             });
         });
     };
