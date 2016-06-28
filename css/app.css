@@ -9,3 +9,24 @@
 .grey-color {
 	background: #212427;
 }
+
+.c-container {
+	overflow: scroll;
+}
+
+.overlay {
+	display: none;
+	position: absolute;
+	top: 0px;
+	height: 100%;
+	width: 100%;
+	background-color: rgba(0,0,0,0.7);
+	z-index: 5;
+}
+
+.box {
+	position: relative;
+	top: 40%;
+	height: 150px;
+	background: white;
+}

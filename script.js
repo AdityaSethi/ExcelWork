@@ -26,9 +26,10 @@ function filePicked(oEvent) {
     var sFilename = oFile.name;
     // Create A File Reader HTML5
     var reader = new FileReader();
-    
+    var datalength = 0;
     // Ready The Event For When A File Gets Selected
     reader.onload = function(e) {
+        $('.overlay').show();
         var data = e.target.result;
         var cfb = XLS.CFB.read(data, {type: 'binary'});
         var wb = XLS.parse_xlscfb(cfb);
@@ -37,7 +38,7 @@ function filePicked(oEvent) {
             // Obtain The Current Row As CSV
             var sCSV = XLS.utils.make_csv(wb.Sheets[sheetName]);   
             var data = XLS.utils.sheet_to_json(wb.Sheets[sheetName], {header:1});
-            
+            console.log(data);
             var newdata = [];
             
             data.forEach(function (arr) {
@@ -47,7 +48,7 @@ function filePicked(oEvent) {
             });
             
             var sampleObject = {};
-            console.log(newdata);
+            
             newdata[0].forEach(function (key) {
                 sampleObject[key] = ''
             });
@@ -97,41 +98,57 @@ function filePicked(oEvent) {
                     firstName: col.CUSTOMER_NAME,
                     lastName: '',
                     cData: stringifyCData,
+                    deliverDate: col.CLOSEDATE
                 })
             });
             var datalength = objectToPost.length;
-            objectToPost.forEach(function (postObj) {
-                $.post('http://jabong.apitest.zykrr.com/token/12', postObj).done(function (data) {
-                    postObj.token = data.uid;
-                    postObj.url = "http://jabong.zykrr.com?token=" + data.uid + '%' + data.emailId;
-                    datalength--;
-                    if (datalength == 0) {
-                        objectToPost.forEach(function (postData) {
-                            postData.cData = JSON.parse(postData.cData);
-                            newdata.forEach(function (ndata) {
-                                if (ndata[0] === postData.cData.orderNo) {
-                                    ndata.push(postData.token);
-                                    ndata.push(postData.url);
-                                }
-                            })
-                        });
+            var index = 0;
+            
+            postRequest(index);
+            
+            function postRequest (index) {
+                if (index < datalength) {
+                    var data = objectToPost[index];
+                    $.post('http://jabong.apitest.zykrr.com/token/12', data).done(function (result) {
+                        objectToPost[index].token = result.uid; 
+                        objectToPost[index].url = "http://jabong.zykrr.com?token=" + result.uid + '%' + result.emailid;
+                        index++;
+                        var progress = index / datalength * 100;
+                        $('.pval').html(progress + '% ');
+                        $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress);
+                        postRequest(index);
+                    })
+                } else {
+                    setNewData();
+                    $('.overlay').hide();
+                }
+            }
 
-                        header.push('TOKEN');
-                        header.push('URL');
+            function setNewData () {
+                objectToPost.forEach(function (postData) {
+                    postData.cData = JSON.parse(postData.cData);
+                    newdata.forEach(function (ndata) {
+                        if (ndata[0] === postData.cData.orderNo) {
+                            ndata.push(postData.token);
+                            ndata.push(postData.url);
+                        }
+                    })
+                });
 
-                        newdata.unshift(header);
+                header.push('TOKEN');
+                header.push('URL');
 
-                        $.each(newdata, function( indexR, valueR ) {
-                            var sRow = "<tr>";
-                            $.each(newdata[indexR], function( indexC, valueC ) {
-                                sRow = sRow + "<td>" + valueC + "</td>";
-                            });
-                            sRow = sRow + "</tr>";
-                            $("#my_file_output").append(sRow);
-                        });
-                    }
-                })
-            });
+                newdata.unshift(header);
+
+                $.each(newdata, function( indexR, valueR ) {
+                    var sRow = "<tr>";
+                    $.each(newdata[indexR], function( indexC, valueC ) {
+                        sRow = sRow + "<td>" + valueC + "</td>";
+                    });
+                    sRow = sRow + "</tr>";
+                    $("#my_file_output").append(sRow);
+                });
+            }
         });
     };
     
