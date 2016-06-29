@@ -34,10 +34,10 @@ function filePicked(oEvent) {
         var cfb = XLS.CFB.read(data, {type: 'binary'});
         var wb = XLS.parse_xlscfb(cfb);
         // Loop Over Each Sheet
-        wb.SheetNames.forEach(function(sheetName) {
+        
             // Obtain The Current Row As CSV
-            var sCSV = XLS.utils.make_csv(wb.Sheets[sheetName]);   
-            var data = XLS.utils.sheet_to_json(wb.Sheets[sheetName], {header:1});
+            var sCSV = XLS.utils.make_csv(wb.Sheets['Sheet1']);   
+            var data = XLS.utils.sheet_to_json(wb.Sheets['Sheet1'], {header:1});
             console.log(data);
             var newdata = [];
             
@@ -88,6 +88,8 @@ function filePicked(oEvent) {
                 cData.productName = productname.substring(0, productname.length - 1);
                 cData.orderNo = col.ORDERNO;
                 cData.orderDate = col.ORDERDATE;
+                cData.firstName = col.CUSTOMER_NAME;
+                cData.deliveryDate = col.CLOSEDATE;
 
                 productname = ''
 
@@ -97,8 +99,7 @@ function filePicked(oEvent) {
                     emailId: col.CUSTOMER_EMAIL,
                     firstName: col.CUSTOMER_NAME,
                     lastName: '',
-                    cData: stringifyCData,
-                    deliverDate: col.CLOSEDATE
+                    cData: stringifyCData
                 })
             });
             var datalength = objectToPost.length;
@@ -111,7 +112,7 @@ function filePicked(oEvent) {
                     var data = objectToPost[index];
                     $.post('http://jabong.apitest.zykrr.com/token/12', data).done(function (result) {
                         objectToPost[index].token = result.uid; 
-                        objectToPost[index].url = "http://jabong.zykrr.com?token=" + result.uid + '%' + result.emailid;
+                        objectToPost[index].url = "http://jabong.zykrr.com?token=" + result.uid;
                         index++;
                         var progress = index / datalength * 100;
                         $('.pval').html(progress + '% ');
@@ -119,20 +120,18 @@ function filePicked(oEvent) {
                         postRequest(index);
                     })
                 } else {
-                    setNewData();
+                    setNewData(index, datalength);
                     $('.overlay').hide();
                 }
             }
 
-            function setNewData () {
+            function setNewData (i, dl) {
+                var oIndex = 0;
                 objectToPost.forEach(function (postData) {
                     postData.cData = JSON.parse(postData.cData);
-                    newdata.forEach(function (ndata) {
-                        if (ndata[0] === postData.cData.orderNo) {
-                            ndata.push(postData.token);
-                            ndata.push(postData.url);
-                        }
-                    })
+                    newdata[oIndex].push(postData.token);
+                    newdata[oIndex].push(postData.url);
+                    oIndex++;
                 });
 
                 header.push('TOKEN');
@@ -146,10 +145,11 @@ function filePicked(oEvent) {
                         sRow = sRow + "<td>" + valueC + "</td>";
                     });
                     sRow = sRow + "</tr>";
-                    $("#my_file_output").append(sRow);
+                    if (i === dl) {
+                        $("#my_file_output").append(sRow);    
+                    }
                 });
             }
-        });
     };
     
     // Tell JS To Start Reading The File.. You could delay this if desired
