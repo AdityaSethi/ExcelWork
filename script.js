@@ -75,7 +75,8 @@ function filePicked(oEvent) {
                     orderNo: '',
                     productImg: 'todo',
                     orderDate: '',
-                    deliveryDate: ''
+                    deliveryDate: '',
+                    firstName: ''
                 };
                 var productname = '';
                 for (var key in col) {
