@@ -75,7 +75,8 @@ function filePicked(oEvent) {
                     orderNo: '',
                     productImg: 'todo',
                     orderDate: '',
-                    deliveryDate: ''
+                    deliveryDate: '',
+                    firstName: ''
                 };
                 var productname = '';
                 for (var key in col) {
@@ -88,6 +89,8 @@ function filePicked(oEvent) {
                 cData.productName = productname.substring(0, productname.length - 1);
                 cData.orderNo = col.ORDERNO;
                 cData.orderDate = col.ORDERDATE;
+                cData.firstName = col.CUSTOMER_NAME;
+                cData.deliverDate = col.CLOSEDATE;
 
                 productname = ''
 
@@ -97,8 +100,7 @@ function filePicked(oEvent) {
                     emailId: col.CUSTOMER_EMAIL,
                     firstName: col.CUSTOMER_NAME,
                     lastName: '',
-                    cData: stringifyCData,
-                    deliverDate: col.CLOSEDATE
+                    cData: stringifyCData
                 })
             });
             var datalength = objectToPost.length;
@@ -111,7 +113,7 @@ function filePicked(oEvent) {
                     var data = objectToPost[index];
                     $.post('http://jabong.apitest.zykrr.com/token/12', data).done(function (result) {
                         objectToPost[index].token = result.uid; 
-                        objectToPost[index].url = "http://jabong.zykrr.com?token=" + result.uid + '%' + result.emailid;
+                        objectToPost[index].url = "http://jabong.zykrr.com?token=" + result.uid;
                         index++;
                         var progress = index / datalength * 100;
                         $('.pval').html(progress + '% ');
